@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Register
+{% endblock %}
+
+{% block body %}
+    <h1>Register</h1>
+
+    <form action="{{ url_for('register') }}" method="post">
+
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input class="form-control" id="name" required name="name" type="text" value="{{ name }}" placeholder="Your name">
+        </div>
+
+        <div class="form-group">
+            <label for="login">Login</label>
+            <input class="form-control" id="login" required name="login" type="text" value="{{ login }}" placeholder="Login">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input class="form-control" id="password" required name="password" type="password" value="{{ password }}" placeholder="Password">
+        </div>
+
+        <div class="form-group">
+            <button class="btn btn-primary">Register</button>
+        </div>
+
+    </form>
+{% endblock %}
