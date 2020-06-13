@@ -28,6 +28,10 @@
                     </ul>
                     {% if session['user'] %}
                     <div class="my-2 my-lg-0">
+                        <form class="d-inline form-inline" action="{{ url_for('search') }}">
+                            <input class="form-control mr-sm-2" type="search" name="search" placeholder="Search" aria-label="Search">
+                            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                        </form>
                         <h4 class="d-inline mr-sm-2">{{ session['user'].name }} </h4>
                         <a href="{{ url_for('logout') }}" class="btn btn-primary my-2 my-sm-0" type="submit">Logout</a>
                     </div>

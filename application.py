@@ -2,7 +2,7 @@ import os, hashlib
 
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_session import Session
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, or_, asc
 from sqlalchemy.orm import sessionmaker
 
 from models import *
@@ -94,3 +94,28 @@ def logout():
 @app.route("/books")
 def books():
     return redirect(url_for('home'))
+
+
+@app.route("/search")
+def search():
+    if not session['user']:
+        return redirect(url_for('home'))
+
+    search = request.args.get("search")
+
+    if not search:
+        return render_template("search.html", message="No search was provided")
+
+    books_list = db_session.query(Book).filter(or_(
+        Book.isbn.like(f'%{search}%'),
+        Book.title.like(f'%{search}%'),
+        Book.author.like(f'%{search}%'))
+    ).order_by(asc(Book.isbn))
+
+    if books_list.count() > 0:
+        return render_template("search.html", search=search, books=books_list)
+
+    else:
+        return render_template("search.html", search=search, message=f"No book for search request '{search}' was found")
+
+
