@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Login
+{% endblock %}
+
+{% block body %}
+    {% if book %}
+    <h1>{{ book.title}}</h1>
+    <section>
+        <dl>
+            <dt>ISBN:</dt>
+            <dd>{{ book.isbn}}</dd>
+
+            <dt>Author:</dt>
+            <dd>{{ book.author}}</dd>
+
+            <dt>Year:</dt>
+            <dd>{{ book.year}}</dd>
+        </dl>
+    </section>
+
+    {% endif %}
+{% endblock %}

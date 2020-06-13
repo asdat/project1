@@ -15,7 +15,7 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav mr-auto">
                         {% if session['user'] %}
-                            {% set menu = ['home', 'books'] %}
+                            {% set menu = ['home', 'search'] %}
                         {% else %}
                             {% set menu = ['home', 'login', 'register'] %}
                         {% endif %}

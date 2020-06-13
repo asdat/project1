@@ -26,7 +26,7 @@ engine = create_engine(os.getenv("DATABASE_URL"), echo=False)
 db_session = sessionmaker(bind=engine)()
 
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def home():
     return render_template("index.html")
 
@@ -85,18 +85,29 @@ def login():
     return render_template("login.html")
 
 
-@app.route("/logout")
+@app.route("/logout", methods=["GET"])
 def logout():
     session['user'] = None
     return redirect(url_for('home'))
 
 
-@app.route("/books")
-def books():
-    return redirect(url_for('home'))
+@app.route("/book/<isbn>", methods=["GET"])
+def book(isbn):
+    if not session['user']:
+        return redirect(url_for('home'))
+
+    if not isbn:
+        return render_template("book.html", message="No ISBN was provided")
+
+    book_item = db_session.query(Book).filter_by(isbn=isbn).first()
+
+    if not book_item:
+        return render_template("book.html", message=f"No book fo ISBN {isbn} was found")
+
+    return render_template("book.html", book=book_item)
 
 
-@app.route("/search")
+@app.route("/search", methods=["GET"])
 def search():
     if not session['user']:
         return redirect(url_for('home'))
