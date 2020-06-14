@@ -16,10 +16,10 @@
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
-                {% if session['user'] %}
-                {% set menu = ['home', 'search'] %}
+                {% if session["user_id"] %}
+                {% set menu = ['search'] %}
                 {% else %}
-                {% set menu = ['home', 'login', 'register'] %}
+                {% set menu = ['login', 'register'] %}
                 {% endif %}
 
                 {% for menu_item in menu %}
@@ -29,14 +29,14 @@
                 </li>
                 {% endfor %}
             </ul>
-            {% if session['user'] %}
+            {% if session["user_name"] %}
             <div class="my-2 my-lg-0">
-                <form class="d-inline form-inline" action="{{ url_for('search') }}">
+                <form class="d-inline form-inline" action="{{ url_for('search') }}" name="search-top-form">
                     <input class="form-control mr-sm-2" type="search" name="search" placeholder="Search"
                            aria-label="Search">
                     <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
                 </form>
-                <h4 class="d-inline mr-sm-2">{{ session['user'].name }} </h4>
+                <h4 class="d-inline mr-sm-2">{{ session["user_name"] }} </h4>
                 <a href="{{ url_for('logout') }}" class="btn btn-primary my-2 my-sm-0" type="submit">Logout</a>
             </div>
             {% endif %}

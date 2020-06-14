@@ -7,7 +7,7 @@ Login
 {% block body %}
 <h1>Search</h1>
 
-<form action="{{ url_for('search') }}">
+<form action="{{ url_for('search') }}" name="search-form">
 
     <div class="form-group">
         <input class="form-control" name="search" value="{{ search }}" type="text" placeholder="search keyword">
@@ -19,7 +19,7 @@ Login
 
 </form>
 
-{% if books and books.count() %}
+{% if books %}
 <h4>Amount of found books: {{ count }}</h4>
 <table class="table">
     <thead>
