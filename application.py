@@ -1,4 +1,5 @@
 import os, hashlib
+from math import ceil
 
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_session import Session
@@ -112,19 +113,23 @@ def search():
     if not session['user']:
         return redirect(url_for('home'))
 
+    per_page = 10
+    page = int(request.args.get("page", 1))
     search = request.args.get("search")
 
     if not search:
-        return render_template("search.html", message="No search was provided")
+        return render_template("search.html")
 
-    books_list = db_session.query(Book).filter(or_(
+    query = db_session.query(Book).filter(or_(
         Book.isbn.like(f'%{search}%'),
         Book.title.like(f'%{search}%'),
         Book.author.like(f'%{search}%'))
-    ).order_by(asc(Book.isbn))
+    )
+    count = query.count()
+    books_list = query.order_by(asc(Book.isbn)).limit(per_page).offset(per_page * (page - 1))
 
     if books_list.count() > 0:
-        return render_template("search.html", search=search, books=books_list)
+        return render_template("search.html", search=search, books=books_list, pages=ceil(count / per_page), count=count, page=page, per_page=per_page)
 
     else:
         return render_template("search.html", search=search, message=f"No book for search request '{search}' was found")

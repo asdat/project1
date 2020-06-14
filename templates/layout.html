@@ -21,7 +21,7 @@
                         {% endif %}
 
                         {% for menu_item in menu %}
-                        <li {%- if request.path == url_for(menu_item) %} class="nav-item active"{% endif %}>
+                        <li class="nav-item {%- if request.path == url_for(menu_item) %} active{% endif %}">
                             <a class="nav-link" href="{{ url_for(menu_item) }}">{{ menu_item | capitalize }} {%- if request.path == url_for(menu_item) %}<span class="sr-only">(current)</span>{% endif %}</a>
                         </li>
                         {% endfor %}

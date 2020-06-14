@@ -20,7 +20,7 @@
     </form>
 
     {% if books and books.count() %}
-    <h4>Amount of found books: {{ books.count() }}</h4>
+    <h4>Amount of found books: {{ count }}</h4>
     <table class="table">
         <thead>
         <tr>
@@ -40,6 +40,35 @@
         </tr>
         {% endfor %}
         </tbody>
+        {% if pages > 1 %}
+        <tfoot>
+        <tr>
+            <td colspan="4">
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+                        <li class="page-item {%- if page == 1 %} disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('search', search=search, page=1) }}" aria-label="First">
+                                First
+                            </a>
+                        </li>
+                        {% if page > 1 %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for('search', search=search, page=page - 1) }}">{{ page - 1 }}</a></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ page }}</span></li>
+                        {% if page < pages %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for('search', search=search, page=page + 1) }}">{{ page + 1 }}</a></li>
+                        {% endif %}
+                        <li class="page-item {%- if page == pages %} disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('search', search=search, page=pages) }}" aria-label="Last">
+                                Last
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </td>
+        </tr>
+        </tfoot>
+        {% endif %}
     </table>
     {% endif %}
 {% endblock %}
