@@ -22,7 +22,12 @@ Login
 
             {% if rating %}
             <dt>Average rating:</dt>
-            <dd>{{'%0.1f'| format(rating|float)}}</dd>
+            <dd>{{'%0.2f'| format(rating|float)}}</dd>
+            {% endif %}
+
+            {% if goodreads %}
+            <dt>GoodReads rating:</dt>
+            <dd>{{'%0.2f'| format(goodreads|float)}}</dd>
             {% endif %}
         </dl>
     </div>

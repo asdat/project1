@@ -1,4 +1,4 @@
-import os, hashlib
+import os, hashlib, requests, json
 from math import ceil
 
 from flask import Flask, render_template, request, redirect, url_for, session
@@ -111,7 +111,16 @@ def book(isbn):
     has_review = db_session.query(Review).filter_by(book_id=book_item.id).filter_by(user_id=session['user'].id).first()
     rating = db_session.query(func.avg(Review.rating)).filter_by(book_id=book_item.id).scalar()
     count = db_session.query(func.count(Review.rating)).filter_by(book_id=book_item.id).scalar()
-    return render_template("book.html", book=book_item, has_review=has_review, rating=rating, count=count)
+
+    res = requests.get("https://www.goodreads.com/book/review_counts.json",
+                       params={"key": os.getenv("GOODREADS_KEY"), "isbns": isbn})
+    if res.status_code == 200:
+        goodreads_rating = res.json().get('books', [{'average_rating': False}])[0].get('average_rating')
+    else:
+        goodreads_rating = None
+
+    return render_template("book.html", book=book_item, has_review=has_review, rating=rating, count=count,
+                           goodreads=goodreads_rating)
 
 
 @app.route("/review", methods=["POST"])
