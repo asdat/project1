@@ -23,6 +23,7 @@ Session(app)
 # Set up database
 engine = create_engine(os.getenv("DATABASE_URL"), echo=False)
 db = scoped_session(sessionmaker(engine))
+per_page = 10
 
 
 @app.route("/", methods=["GET"])
@@ -115,7 +116,7 @@ def book(isbn):
     if not book_item:
         return render_template("404.html"), 404
 
-    reviews = db.execute(
+    book_reviews = db.execute(
         "SELECT r.rating, r.comment, u.name, u.login "
         "FROM reviews AS r "
         "INNER JOIN users AS u ON u.id = r.user_id "
@@ -142,7 +143,7 @@ def book(isbn):
         goodreads['count'] = data.get('work_ratings_count')
         goodreads['rating'] = data.get('average_rating')
 
-    return render_template("book.html", book=book_item, has_review=has_review, reviews=reviews, rating=rating,
+    return render_template("book.html", book=book_item, has_review=has_review, reviews=book_reviews, rating=rating,
                            goodreads=goodreads)
 
 
@@ -209,13 +210,41 @@ def review():
     return redirect(url_for('book', isbn=isbn))
 
 
+@app.route("/reviews", methods=["GET"])
+def reviews():
+    if not session.get('user_id'):
+        flash("Please login first")
+        return redirect(url_for('home'))
+
+    page = int(request.args.get("page", 1))
+    results_count = db.execute("SELECT COUNT(*) as cnt "
+                               "FROM reviews "
+                               "WHERE user_id = :user_id",
+                               {"user_id": session.get('user_id')}).fetchone().cnt
+
+    book_reviews = db.execute(
+        "SELECT r.rating, r.comment, r.created_at, b.title, b.author, b.isbn, b.year "
+        "FROM reviews AS r "
+        "INNER JOIN books AS b ON b.id = r.book_id "
+        "WHERE r.user_id = :user_id "
+        "LIMIT :limit OFFSET :offset",
+        {"user_id": session.get('user_id'), "offset": per_page * (page - 1), "limit": per_page}
+    ).fetchall()
+
+    rating = db.execute(
+        "SELECT AVG(rating) as average, COUNT(*) as count FROM reviews WHERE user_id = :user_id",
+        {"user_id": session.get('user_id')}).fetchone()
+
+    return render_template("reviews.html", reviews=book_reviews, rating=rating, pages=ceil(results_count / per_page),
+                           count=results_count, page=page, per_page=per_page)
+
+
 @app.route("/search", methods=["GET"])
 def search():
     if not session.get('user_id'):
         flash("Please login first")
         return redirect(url_for('home'))
 
-    per_page = 10
     page = int(request.args.get("page", 1))
     search = request.args.get("search")
 
@@ -232,8 +261,8 @@ def search():
                             "WHERE isbn LIKE :search OR title LIKE :search OR author LIKE :search "
                             "ORDER BY year ASC, isbn ASC "
                             "LIMIT :limit OFFSET :offset",
-                            {"search": f"%{search}%", "offset": per_page * (page - 1),
-                             "limit": per_page}).fetchall()
+                            {"search": f"%{search}%", "offset": per_page * (page - 1), "limit": per_page}
+                            ).fetchall()
 
     if results_count > 0:
         return render_template("search.html", search=search, books=books_list, pages=ceil(results_count / per_page),
