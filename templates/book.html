@@ -1,24 +1,84 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Login
+Login
 {% endblock %}
 
 {% block body %}
-    {% if book %}
-    <h1>{{ book.title}}</h1>
-    <section>
+{% if book %}
+<h1>{{ book.title}}</h1>
+<section class="row">
+    <div class="col-12 col-md-4">
+        <h3>Book information</h3>
         <dl>
             <dt>ISBN:</dt>
-            <dd>{{ book.isbn}}</dd>
+            <dd>{{ book.isbn }}</dd>
 
             <dt>Author:</dt>
-            <dd>{{ book.author}}</dd>
+            <dd>{{ book.author }}</dd>
 
             <dt>Year:</dt>
-            <dd>{{ book.year}}</dd>
-        </dl>
-    </section>
+            <dd>{{ book.year }}</dd>
 
+            {% if rating %}
+            <dt>Average rating:</dt>
+            <dd>{{'%0.1f'| format(rating|float)}}</dd>
+            {% endif %}
+        </dl>
+    </div>
+
+    {% if not has_review %}
+    <div class="col-12 col-md-8">
+        <h3>Add review</h3>
+        <form action="{{ url_for('review') }}" method="post">
+            <input type="hidden" name="isbn" value="{{ book.isbn }}"/>
+
+            <div class="form-group">
+                <label>Rating</label>
+                {% for i in range(1, 6) %}
+                <label for="rating-{{ i }}" class="btn">
+                    <input required="required" id="rating-{{ i }}" value="{{ i }}" name="rating" type="radio" {%- if
+                           rating and i== rating %}checked="checked" {% endif %}/>
+                    {{ i }}
+                </label>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                <label for="comment">Comment</label>
+                <textarea class="form-control" id="comment" name="comment">{{ comment }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <button class="btn btn-primary">Submit review</button>
+            </div>
+
+        </form>
+    </div>
     {% endif %}
+</section>
+
+{% if book.reviews %}
+<section>
+    <h3>Reviews ({{ count }})</h3>
+    {% for review in book.reviews %}
+    <div>
+        <dl>
+            <dt>Author:</dt>
+            <dd>{{ review.user.name }} ({{ review.user.login }})</dd>
+
+            <dt>Rating:</dt>
+            <dd>{{ review.rating}}</dd>
+
+            {% if review.comment %}
+            <dt>Comment:</dt>
+            <dd>{{ review.comment }}</dd>
+            {% endif %}
+        </dl>
+    </div>
+    {% endfor %}
+</section>
+{% endif %}
+
+{% endif %}
 {% endblock %}

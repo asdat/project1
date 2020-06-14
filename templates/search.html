@@ -1,74 +1,83 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Login
+Login
 {% endblock %}
 
 {% block body %}
-    <h1>Search</h1>
+<h1>Search</h1>
 
-    <form action="{{ url_for('search') }}">
+<form action="{{ url_for('search') }}">
 
-        <div class="form-group">
-            <input class="form-control" name="search" value="{{ search }}" type="text" placeholder="search keyword">
-        </div>
+    <div class="form-group">
+        <input class="form-control" name="search" value="{{ search }}" type="text" placeholder="search keyword">
+    </div>
 
-        <div class="form-group">
-            <button class="btn btn-primary">Search</button>
-        </div>
+    <div class="form-group">
+        <button class="btn btn-primary">Search</button>
+    </div>
 
-    </form>
+</form>
 
-    {% if books and books.count() %}
-    <h4>Amount of found books: {{ count }}</h4>
-    <table class="table">
-        <thead>
-        <tr>
-            <th scope="col">ISBN</th>
-            <th scope="col">Title</th>
-            <th scope="col">Author</th>
-            <th scope="col">Year</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for book in books %}
-        <tr>
-            <td><a href="{{ url_for('book', isbn=book.isbn) }}">{{ book.isbn }}</a></td>
-            <td>{{ book.title }}</td>
-            <td>{{ book.author }}</td>
-            <td>{{ book.year }}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-        {% if pages > 1 %}
-        <tfoot>
-        <tr>
-            <td colspan="4">
-                <nav aria-label="Page navigation example">
-                    <ul class="pagination">
-                        <li class="page-item {%- if page == 1 %} disabled{% endif %}">
-                            <a class="page-link" href="{{ url_for('search', search=search, page=1) }}" aria-label="First">
-                                First
-                            </a>
-                        </li>
-                        {% if page > 1 %}
-                        <li class="page-item"><a class="page-link" href="{{ url_for('search', search=search, page=page - 1) }}">{{ page - 1 }}</a></li>
-                        {% endif %}
-                        <li class="page-item active"><span class="page-link">{{ page }}</span></li>
-                        {% if page < pages %}
-                        <li class="page-item"><a class="page-link" href="{{ url_for('search', search=search, page=page + 1) }}">{{ page + 1 }}</a></li>
-                        {% endif %}
-                        <li class="page-item {%- if page == pages %} disabled{% endif %}">
-                            <a class="page-link" href="{{ url_for('search', search=search, page=pages) }}" aria-label="Last">
-                                Last
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </td>
-        </tr>
-        </tfoot>
-        {% endif %}
-    </table>
+{% if books and books.count() %}
+<h4>Amount of found books: {{ count }}</h4>
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">ISBN</th>
+        <th scope="col">Title</th>
+        <th scope="col">Author</th>
+        <th scope="col">Year</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for book in books %}
+    <tr>
+        <td><a href="{{ url_for('book', isbn=book.isbn) }}">{{ book.isbn }}</a></td>
+        <td>{{ book.title }}</td>
+        <td>{{ book.author }}</td>
+        <td>{{ book.year }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    {% if pages > 1 %}
+    <tfoot>
+    <tr>
+        <td colspan="4">
+            <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                    <li class="page-item {%- if page == 1 %} disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('search', search=search, page=1) }}" aria-label="First">
+                            First
+                        </a>
+                    </li>
+
+                    {% if page > 1 %}
+                    <li class="page-item"><a class="page-link"
+                                             href="{{ url_for('search', search=search, page=page - 1) }}">{{ page - 1
+                        }}</a></li>
+                    {% endif %}
+
+                    <li class="page-item active"><span class="page-link">{{ page }}</span></li>
+
+                    {% if page < pages %}
+                    <li class="page-item"><a class="page-link"
+                                             href="{{ url_for('search', search=search, page=page + 1) }}">{{ page + 1
+                        }}</a></li>
+                    {% endif %}
+
+                    <li class="page-item {%- if page == pages %} disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('search', search=search, page=pages) }}"
+                           aria-label="Last">
+                            Last
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </td>
+    </tr>
+    </tfoot>
     {% endif %}
+</table>
+{% endif %}
 {% endblock %}

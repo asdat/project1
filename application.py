@@ -3,7 +3,7 @@ from math import ceil
 
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_session import Session
-from sqlalchemy import create_engine, or_, asc
+from sqlalchemy import create_engine, or_, asc, func
 from sqlalchemy.orm import sessionmaker
 
 from models import *
@@ -44,17 +44,20 @@ def register():
 
         user = db_session.query(User).filter_by(login=login).first()
         if user:
-            return render_template("register.html", message=f"User with login '{login}' already exists.", name=name, login=login, password=password)
+            return render_template("register.html", message=f"User with login '{login}' already exists.", name=name,
+                                   login=login, password=password)
         else:
             if not login or not password:
-                return render_template("register.html", message="Login and password are required fields.", name=name, login=login, password=password)
+                return render_template("register.html", message="Login and password are required fields.", name=name,
+                                       login=login, password=password)
 
             try:
-                db.db_session.add(User(name=name, login=login, password=hashlib.sha1(password.encode()).hexdigest()))
+                db.session.add(User(name=name, login=login, password=hashlib.sha1(password.encode()).hexdigest()))
                 print(f"Added user {name} ({login}) by {password}.")
-                db.db_session.commit()
+                db.session.commit()
             except Exception:
-                return render_template("register.html", message="Error creating user, please try again later.", name=name, login=login, password=password)
+                return render_template("register.html", message="Error creating user, please try again later.",
+                                       name=name, login=login, password=password)
 
         return redirect(url_for('login'))
 
@@ -105,7 +108,43 @@ def book(isbn):
     if not book_item:
         return render_template("book.html", message=f"No book fo ISBN {isbn} was found")
 
-    return render_template("book.html", book=book_item)
+    has_review = db_session.query(Review).filter_by(book_id=book_item.id).filter_by(user_id=session['user'].id).first()
+    rating = db_session.query(func.avg(Review.rating)).filter_by(book_id=book_item.id).scalar()
+    count = db_session.query(func.count(Review.rating)).filter_by(book_id=book_item.id).scalar()
+    return render_template("book.html", book=book_item, has_review=has_review, rating=rating, count=count)
+
+
+@app.route("/review", methods=["POST"])
+def review():
+    if not session['user']:
+        return redirect(url_for('home'))
+
+    rating = request.form.get("rating")
+    comment = request.form.get("comment")
+    isbn = request.form.get("isbn")
+
+    book_item = db_session.query(Book).filter_by(isbn=isbn).first()
+    if not book_item:
+        return render_template("book.html", message=f"No book fo ISBN {isbn} was found")
+
+    review_item = db_session.query(Review).filter_by(book_id=book_item.id).filter_by(user_id=session['user'].id).first()
+    if review_item:
+        return render_template("book.html", message="You already left review for this book")
+
+    if not rating:
+        return render_template("book.html", message="No rating was provided", book=book_item, rating=rating,
+                               comment=comment)
+
+    try:
+        db.session.add(Review(rating=rating, comment=comment, book_id=book_item.id, user_id=session['user'].id))
+        print(
+            f"Added review {rating} with comment {comment} by {session['user'].name} ({session['user'].login}) for book {book_item.title} ({isbn}).")
+        db.session.commit()
+    except Exception:
+        return render_template("book.html", message="Error creating review, please try again later.", book=book_item,
+                               rating=rating, comment=comment)
+
+    return redirect(url_for('book', isbn=isbn))
 
 
 @app.route("/search", methods=["GET"])
@@ -129,9 +168,8 @@ def search():
     books_list = query.order_by(asc(Book.isbn)).limit(per_page).offset(per_page * (page - 1))
 
     if books_list.count() > 0:
-        return render_template("search.html", search=search, books=books_list, pages=ceil(count / per_page), count=count, page=page, per_page=per_page)
+        return render_template("search.html", search=search, books=books_list, pages=ceil(count / per_page),
+                               count=count, page=page, per_page=per_page)
 
     else:
         return render_template("search.html", search=search, message=f"No book for search request '{search}' was found")
-
-
