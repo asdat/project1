@@ -114,13 +114,18 @@ def book(isbn):
 
     res = requests.get("https://www.goodreads.com/book/review_counts.json",
                        params={"key": os.getenv("GOODREADS_KEY"), "isbns": isbn})
+    goodreads = {
+        'count': 0,
+        'rating': 0
+    }
+
     if res.status_code == 200:
-        goodreads_rating = res.json().get('books', [{'average_rating': False}])[0].get('average_rating')
-    else:
-        goodreads_rating = None
+        data = res.json().get('books')[0]
+        goodreads['count'] = data.get('work_ratings_count')
+        goodreads['rating'] = data.get('average_rating')
 
     return render_template("book.html", book=book_item, has_review=has_review, rating=rating, count=count,
-                           goodreads=goodreads_rating)
+                           goodreads=goodreads)
 
 
 @app.route("/review", methods=["POST"])

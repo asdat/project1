@@ -21,13 +21,13 @@ Login
             <dd>{{ book.year }}</dd>
 
             {% if rating %}
-            <dt>Average rating:</dt>
-            <dd>{{'%0.2f'| format(rating|float)}}</dd>
+            <dt>Rating:</dt>
+            <dd>{{'%0.2f'| format(rating|float)}} of {{ count }} reviews</dd>
             {% endif %}
 
-            {% if goodreads %}
+            {% if goodreads and goodreads.get('count') > 0 %}
             <dt>GoodReads rating:</dt>
-            <dd>{{'%0.2f'| format(goodreads|float)}}</dd>
+            <dd>{{'%0.2f'| format(goodreads.get('rating')|float)}} of {{ goodreads.get('count') }} reviews</dd>
             {% endif %}
         </dl>
     </div>
@@ -65,7 +65,7 @@ Login
 
 {% if book.reviews %}
 <section>
-    <h3>Reviews ({{ count }})</h3>
+    <h3>Reviews</h3>
     {% for review in book.reviews %}
     <div>
         <dl>
