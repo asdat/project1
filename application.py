@@ -1,7 +1,7 @@
-import os, hashlib, requests, json
+import os, hashlib, requests
 from math import ceil
 
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_session import Session
 from sqlalchemy import create_engine, or_, asc, func
 from sqlalchemy.orm import sessionmaker
@@ -106,7 +106,7 @@ def book(isbn):
     book_item = db_session.query(Book).filter_by(isbn=isbn).first()
 
     if not book_item:
-        return render_template("book.html", message=f"No book fo ISBN {isbn} was found")
+        return render_template("404.html")
 
     has_review = db_session.query(Review).filter_by(book_id=book_item.id).filter_by(user_id=session['user'].id).first()
     rating = db_session.query(func.avg(Review.rating)).filter_by(book_id=book_item.id).scalar()
@@ -126,6 +126,29 @@ def book(isbn):
 
     return render_template("book.html", book=book_item, has_review=has_review, rating=rating, count=count,
                            goodreads=goodreads)
+
+
+@app.route("/api/<isbn>", methods=["GET"])
+def api(isbn):
+    if not isbn:
+        return jsonify({'error': 'no isbn provided'})
+
+    book_item = db_session.query(Book).filter_by(isbn=isbn).first()
+
+    if not book_item:
+        return jsonify({'error': f"no book for ISBN {isbn} was found"})
+
+    rating = db_session.query(func.avg(Review.rating)).filter_by(book_id=book_item.id).scalar()
+    count = db_session.query(func.count(Review.rating)).filter_by(book_id=book_item.id).scalar()
+
+    return jsonify({
+        'title': book_item.title,
+        'author': book_item.author,
+        'year': book_item.year,
+        'isbn': book_item.isbn,
+        'review_count': count,
+        'average_score': float(round(rating, 2))
+    })
 
 
 @app.route("/review", methods=["POST"])
